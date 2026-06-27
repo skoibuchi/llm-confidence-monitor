@@ -10,6 +10,8 @@ A research tool that passes intermediate hidden states of an LLM through a linea
 Input text → LLM inference → Extract hidden states → Linear probe → Confidence score
 ```
 
+<img alt="inference" src="./images/inference.png" width="800">
+
 Confidence is computed token by token during generation and displayed with colour coding in a Gradio UI.
 
 ## Architecture
