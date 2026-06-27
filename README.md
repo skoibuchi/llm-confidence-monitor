@@ -1,4 +1,4 @@
-# LLM Confidence Monitor
+# LLM Uncertainty Monitor
 
 An experimental tool that explores whether an LLM's uncertainty can be estimated from its intermediate hidden states.
 
