@@ -1,4 +1,4 @@
-# LLM Uncertainty Monitor — LLM内部状態分析ツール
+# LLM Confidence Monitor — LLM内部状態分析ツール
 
 本プロジェクトは、LLMの中間層の状態（hidden states）から、モデルの不確実性を推定できる可能性を検証する実験的なツールです。
 
