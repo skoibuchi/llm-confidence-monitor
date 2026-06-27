@@ -1,6 +1,9 @@
 # LLM Confidence Monitor
 
-A research tool that passes intermediate hidden states of an LLM through a linear probe to estimate — on a scale of 0.0 to 1.0 — whether the model "knows" or "doesn't know" the current context, and visualises the result in real time.
+An experimental tool that explores whether an LLM's uncertainty can be estimated from its intermediate hidden states.
+
+LLMs can generate plausible answers even when they lack the required knowledge.
+This project uses a linear probe over hidden representations to estimate whether the model "knows" or "doesn't know" the given input, and visualises the confidence score in real time.
 
 > 日本語版は [README.ja.md](README.ja.md) を参照してください。
 
