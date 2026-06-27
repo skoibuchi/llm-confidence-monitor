@@ -9,11 +9,11 @@ This project uses a linear probe over hidden representations to estimate whether
 
 ## Overview
 
+<img alt="inference" src="./images/inference.png" width="800">
+
 ```
 Input text → LLM inference → Extract hidden states → Linear probe → Confidence score
 ```
-
-<img alt="inference" src="./images/inference.png" width="800">
 
 Confidence is computed token by token during generation and displayed with colour coding in a Gradio UI.
 
