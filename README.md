@@ -85,6 +85,20 @@ Generated files:
 - `data/processed/train.jsonl` / `val.jsonl` / `test.jsonl` (English)
 - `data/japanese/processed/train.jsonl` / `val.jsonl` / `test.jsonl` (Japanese)
 
+Key options (`generate_large_dataset.py` / `generate_japanese_dataset.py`):
+
+| Option | Description | Default |
+|---|---|---|
+| `--num_samples` | Number of samples to generate | `2000` |
+| `--output_path` | Output file path | `data/raw/large_dataset.jsonl` |
+| `--high_ratio` | Ratio of high-confidence samples | `0.3` |
+| `--medium_ratio` | Ratio of medium-confidence samples | `0.4` |
+| `--low_ratio` | Ratio of low-confidence samples | `0.3` |
+| `--train_ratio` | Train split ratio | `0.7` |
+| `--val_ratio` | Validation split ratio | `0.15` |
+| `--test_ratio` | Test split ratio | `0.15` |
+| `--seed` | Random seed | `42` |
+
 > **Dataset limitation**
 >
 > The current generation scripts assign confidence labels by **randomly sampling within a range defined per template category** (e.g. factual → `uniform(0.85, 1.0)`, fictional → `uniform(0.0, 0.25)`). This does not measure whether the model actually knows the fact, so the probe may learn surface-level stylistic patterns rather than genuine knowledge. A more rigorous labelling approach is a known area for improvement.
@@ -157,6 +171,15 @@ python experiments/demo/gradio_app.py \
 
 Open http://localhost:7860 in your browser.
 
+Key options:
+
+| Option | Description | Default |
+|---|---|---|
+| `--model` | Hugging Face model name | `gpt2` |
+| `--checkpoint` | Path to trained probe checkpoint | `None` (dummy probe) |
+| `--port` | Port number | `7860` |
+| `--share` | Create a public Gradio link | flag |
+
 ### Step 4: Generate visualisation reports (optional)
 
 Export evaluation results as interactive HTML reports saved alongside the checkpoint.
@@ -172,6 +195,16 @@ python experiments/scripts/visualize_interactive.py \
     --checkpoint results/experiments/gpt2_weighted_20250612_143022/best_model.pt \
     --output_dir results/experiments/gpt2_weighted_20250612_143022/visualizations
 ```
+
+Key options (`visualize_multi_layer.py` / `visualize_interactive.py`):
+
+| Option | Description | Default |
+|---|---|---|
+| `--checkpoint` | Path to trained probe checkpoint | required |
+| `--output_dir` | Directory to save HTML files | `results/experiments` |
+| `--model_name` | Hugging Face model name | `gpt2` |
+| `--layers` | Layer indices (comma-separated) | `0,6,11` |
+| `--num_samples` | Number of samples to visualise | `100` |
 
 Generated HTML files (open in browser):
 

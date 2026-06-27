@@ -85,6 +85,20 @@ python experiments/scripts/generate_japanese_dataset.py --num_samples 2000
 - `data/processed/train.jsonl` / `val.jsonl` / `test.jsonl`（英語）
 - `data/japanese/processed/train.jsonl` / `val.jsonl` / `test.jsonl`（日本語）
 
+主なオプション（`generate_large_dataset.py` / `generate_japanese_dataset.py`）:
+
+| オプション | 説明 | デフォルト |
+|---|---|---|
+| `--num_samples` | 生成するサンプル数 | `2000` |
+| `--output_path` | 出力ファイルパス | `data/raw/large_dataset.jsonl` |
+| `--high_ratio` | 高確信度サンプルの割合 | `0.3` |
+| `--medium_ratio` | 中確信度サンプルの割合 | `0.4` |
+| `--low_ratio` | 低確信度サンプルの割合 | `0.3` |
+| `--train_ratio` | 学習データの割合 | `0.7` |
+| `--val_ratio` | 検証データの割合 | `0.15` |
+| `--test_ratio` | テストデータの割合 | `0.15` |
+| `--seed` | 乱数シード | `42` |
+
 > **注意: 現在のデータセットの制限**
 >
 > 現在の生成スクリプトは、**テンプレートのカテゴリ（一般常識 / 架空の情報など）をコードで分類し、カテゴリごとに決めた範囲内でラベル値をランダム生成**しています（例: 一般常識 → `uniform(0.85, 1.0)`、架空の情報 → `uniform(0.0, 0.25)`）。
@@ -160,6 +174,15 @@ python experiments/demo/gradio_app.py \
 
 ブラウザで http://localhost:7860 を開いて使用します。
 
+主なオプション:
+
+| オプション | 説明 | デフォルト |
+|---|---|---|
+| `--model` | HF モデル名 | `gpt2` |
+| `--checkpoint` | 学習済みプローブのパス | `None`（ダミープローブ） |
+| `--port` | ポート番号 | `7860` |
+| `--share` | Gradio の公開リンクを作成 | フラグ |
+
 ### ステップ 4: 可視化レポートの生成（任意）
 
 学習済みプローブの評価結果をインタラクティブな HTML レポートとして出力します。
@@ -175,6 +198,16 @@ python experiments/scripts/visualize_interactive.py \
     --checkpoint results/experiments/gpt2_weighted_20250612_143022/best_model.pt \
     --output_dir results/experiments/gpt2_weighted_20250612_143022/visualizations
 ```
+
+主なオプション（`visualize_multi_layer.py` / `visualize_interactive.py`）:
+
+| オプション | 説明 | デフォルト |
+|---|---|---|
+| `--checkpoint` | 学習済みプローブのパス | 必須 |
+| `--output_dir` | HTML の出力先ディレクトリ | `results/experiments` |
+| `--model_name` | HF モデル名 | `gpt2` |
+| `--layers` | 使用する層（カンマ区切り） | `0,6,11` |
+| `--num_samples` | 可視化するサンプル数 | `100` |
 
 生成される HTML（ブラウザで開いて確認）:
 
