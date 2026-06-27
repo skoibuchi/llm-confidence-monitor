@@ -3,7 +3,7 @@
 An experimental tool that explores whether an LLM's uncertainty can be estimated from its intermediate hidden states.
 
 LLMs can generate plausible answers even when they lack the required knowledge.
-This project uses a linear probe over hidden representations to estimate whether the model "knows" or "doesn't know" the given input, and visualises the confidence score in real time.
+This project uses a linear probe over hidden representations to estimate likely to "know" or "not know" the given input, and visualises the confidence score in real time.
 
 > 日本語版は [README.ja.md](./README.ja.md) を参照してください。
 
