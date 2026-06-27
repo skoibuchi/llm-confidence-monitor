@@ -65,19 +65,19 @@ class RealtimeGenerator:
         Args:
             prompt: Input prompt string
             max_new_tokens: Maximum number of tokens to generate
-            temperature: Sampling temperature (do_sample=True 時のみ有効)
-            top_p: Top-p (nucleus) sampling threshold; 1.0 で無効
-            top_k: Top-k filtering; 0 で無効
-            repetition_penalty: 生成済みトークンの logit にペナルティ; 1.0 で無効
-            no_repeat_ngram_size: この長さの n-gram の繰り返しを禁止; 0 で無効
-            min_new_tokens: この数に達するまで EOS を抑制
+            temperature: Sampling temperature (only effective when do_sample=True)
+            top_p: Top-p (nucleus) sampling threshold; 1.0 = disabled
+            top_k: Top-k filtering; 0 = disabled
+            repetition_penalty: Penalty applied to logits of already-generated tokens; 1.0 = disabled
+            no_repeat_ngram_size: Forbid repeating n-grams of this length; 0 = disabled
+            min_new_tokens: Suppress EOS until this many tokens have been generated
             do_sample: False = greedy decoding
 
         Yields:
             Tuple[str, float, Dict]: (token_text, confidence, metadata)
         """
         input_ids = self.tokenizer.encode(prompt, return_tensors="pt").to(self.device)
-        generated_ids: List[int] = []  # 生成済みトークン ID（各種フィルタ用）
+        generated_ids: List[int] = []  # token IDs generated so far (used by various filters)
 
         for step in range(max_new_tokens):
             with torch.no_grad():
@@ -114,7 +114,7 @@ class RealtimeGenerator:
                 for token_id in banned:
                     logits[0, token_id] = float('-inf')
 
-            # ── min_new_tokens: EOS を抑制 ──────────────────────────
+            # ── min_new_tokens: suppress EOS ────────────────────────
             if step < min_new_tokens and self.tokenizer.eos_token_id is not None:
                 logits[0, self.tokenizer.eos_token_id] = float('-inf')
 
