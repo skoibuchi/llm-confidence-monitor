@@ -1,5 +1,5 @@
 """
-Large-scale dataset generation script.
+Generates knowledge probe training data for English models (e.g. gpt2, TinyLlama).
 """
 
 import sys
@@ -15,24 +15,26 @@ from src.data.dataset import split_dataset
 
 def parse_args():
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Generate large dataset")
-    
+    parser = argparse.ArgumentParser(description="Generate English knowledge probe dataset")
+
     parser.add_argument("--num_samples", type=int, default=2000,
                         help="Number of samples to generate (default: 2000)")
-    parser.add_argument("--output_path", type=str, default="data/raw/large_dataset.jsonl",
+    parser.add_argument("--output_path", type=str, default="data/en/raw/large_dataset.jsonl",
                         help="Output file path")
+    parser.add_argument("--processed_dir", type=str, default="data/en/processed",
+                        help="Directory to save split data")
     parser.add_argument("--high_ratio", type=float, default=0.3,
-                        help="Ratio of high confidence samples")
+                        help="Ratio of high-confidence samples")
     parser.add_argument("--medium_ratio", type=float, default=0.4,
-                        help="Ratio of medium confidence samples")
+                        help="Ratio of medium-confidence samples")
     parser.add_argument("--low_ratio", type=float, default=0.3,
-                        help="Ratio of low confidence samples")
+                        help="Ratio of low-confidence samples")
     parser.add_argument("--train_ratio", type=float, default=0.7,
-                        help="Ratio of training samples")
+                        help="Train split ratio")
     parser.add_argument("--val_ratio", type=float, default=0.15,
-                        help="Ratio of validation samples")
+                        help="Validation split ratio")
     parser.add_argument("--test_ratio", type=float, default=0.15,
-                        help="Ratio of test samples")
+                        help="Test split ratio")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed")
     
@@ -44,13 +46,13 @@ def main():
     args = parse_args()
 
     print("=" * 60)
-    print("Large Dataset Generation")
+    print("English Knowledge Dataset Generation")
     print("=" * 60)
-    print(f"\nNumber of samples: {args.num_samples}")
-    print(f"High confidence ratio: {args.high_ratio}")
-    print(f"Medium confidence ratio: {args.medium_ratio}")
-    print(f"Low confidence ratio: {args.low_ratio}")
-    print(f"Output path: {args.output_path}")
+    print(f"  Num samples     : {args.num_samples}")
+    print(f"  High conf ratio : {args.high_ratio}")
+    print(f"  Mid conf ratio  : {args.medium_ratio}")
+    print(f"  Low conf ratio  : {args.low_ratio}")
+    print(f"  Output path     : {args.output_path}")
 
     # Create dataset generator
     generator = DatasetGenerator(seed=args.seed)
@@ -120,30 +122,24 @@ def main():
     # Save
     output_path = Path(args.output_path)
     generator.save_dataset(samples, output_path)
-    print(f"\nDataset saved to {output_path}")
-    
-    # Split dataset
-    print("\nSplitting dataset...")
-    output_dir = output_path.parent.parent / "processed"
+    print(f"\nRAW data saved: {output_path}")
+
+    # Split
+    processed_dir = Path(args.processed_dir)
     splits = split_dataset(
         output_path,
         train_ratio=args.train_ratio,
         val_ratio=args.val_ratio,
         test_ratio=args.test_ratio,
-        output_dir=output_dir,
-        seed=args.seed
+        output_dir=processed_dir,
+        seed=args.seed,
     )
-    
-    print(f"\nSplit summary:")
-    print(f"  Train: {len(splits['train'])} samples ({len(splits['train'])/len(samples)*100:.1f}%)")
-    print(f"  Val: {len(splits['val'])} samples ({len(splits['val'])/len(samples)*100:.1f}%)")
-    print(f"  Test: {len(splits['test'])} samples ({len(splits['test'])/len(samples)*100:.1f}%)")
-    
+    print(f"\nDataset split:")
+    print(f"  train : {len(splits['train'])} samples -> {processed_dir}/train.jsonl")
+    print(f"  val   : {len(splits['val'])} samples -> {processed_dir}/val.jsonl")
+    print(f"  test  : {len(splits['test'])} samples -> {processed_dir}/test.jsonl")
     print(f"\n{'=' * 60}")
-    print("Dataset generation completed!")
-    print(f"Files saved to:")
-    print(f"  Raw: {output_path}")
-    print(f"  Processed: {output_dir}/")
+    print("English dataset generation complete!")
     print(f"{'=' * 60}")
 
 

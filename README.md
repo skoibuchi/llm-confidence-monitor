@@ -85,15 +85,15 @@ python experiments/scripts/generate_japanese_dataset.py --num_samples 2000
 ```
 
 Generated files:
-- `data/processed/train.jsonl` / `val.jsonl` / `test.jsonl` (English)
-- `data/japanese/processed/train.jsonl` / `val.jsonl` / `test.jsonl` (Japanese)
+- `data/en/processed/train.jsonl` / `val.jsonl` / `test.jsonl` (English)
+- `data/ja/processed/train.jsonl` / `val.jsonl` / `test.jsonl` (Japanese)
 
 Key options (`generate_large_dataset.py` / `generate_japanese_dataset.py`):
 
 | Option | Description | Default |
 |---|---|---|
 | `--num_samples` | Number of samples to generate | `2000` |
-| `--output_path` | Output file path | `data/raw/large_dataset.jsonl` |
+| `--output_path` | Output file path | `data/en/raw/large_dataset.jsonl` |
 | `--high_ratio` | Ratio of high-confidence samples | `0.3` |
 | `--medium_ratio` | Ratio of medium-confidence samples | `0.4` |
 | `--low_ratio` | Ratio of low-confidence samples | `0.3` |
@@ -116,7 +116,7 @@ python experiments/scripts/train_multi_layer_probe.py \
     --model_name gpt2 \
     --layers 0,6,11 \
     --aggregation weighted \
-    --data_dir data/processed \
+    --data_dir data/en/processed \
     --experiment_name gpt2_weighted
 
 # Japanese model (rinna/japanese-gpt2-medium)
@@ -124,7 +124,7 @@ python experiments/scripts/train_multi_layer_probe.py \
     --model_name rinna/japanese-gpt2-medium \
     --layers 0,12,23 \
     --aggregation weighted \
-    --data_dir data/japanese/processed \
+    --data_dir data/ja/processed \
     --experiment_name rinna_weighted
 
 # With hidden state caching (recommended for large models / many epochs)
@@ -132,7 +132,7 @@ python experiments/scripts/train_multi_layer_probe.py \
     --model_name TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
     --layers 0,11,21 \
     --aggregation weighted \
-    --data_dir data/processed \
+    --data_dir data/en/processed \
     --experiment_name tinyllama_weighted \
     --num_epochs 10 \
     --cache_hidden_states
@@ -234,11 +234,12 @@ brain-llm/
 │   ├── demo/            # Gradio demo
 │   └── scripts/         # Experiment scripts
 ├── data/
-│   ├── raw/             # Raw English data
-│   ├── processed/       # English train / val / test
-│   └── japanese/        # Japanese data
-│       ├── raw/
-│       └── processed/
+│   ├── en/              # English data
+│   │   ├── raw/         # Raw English data
+│   │   └── processed/   # English train / val / test
+│   └── ja/              # Japanese data
+│       ├── raw/         # Raw Japanese data
+│       └── processed/   # Japanese train / val / test
 ├── results/
 │   └── experiments/     # Trained probes, evaluation results, HTML reports
 │       └── <experiment_name>_<timestamp>/   # e.g. gpt2_weighted_20250612_143022

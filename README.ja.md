@@ -85,15 +85,15 @@ python experiments/scripts/generate_japanese_dataset.py --num_samples 2000
 ```
 
 生成されるファイル:
-- `data/processed/train.jsonl` / `val.jsonl` / `test.jsonl`（英語）
-- `data/japanese/processed/train.jsonl` / `val.jsonl` / `test.jsonl`（日本語）
+- `data/en/processed/train.jsonl` / `val.jsonl` / `test.jsonl`（英語）
+- `data/ja/processed/train.jsonl` / `val.jsonl` / `test.jsonl`（日本語）
 
 主なオプション（`generate_large_dataset.py` / `generate_japanese_dataset.py`）:
 
 | オプション | 説明 | デフォルト |
 |---|---|---|
 | `--num_samples` | 生成するサンプル数 | `2000` |
-| `--output_path` | 出力ファイルパス | `data/raw/large_dataset.jsonl` |
+| `--output_path` | 出力ファイルパス | `data/en/raw/large_dataset.jsonl` |
 | `--high_ratio` | 高確信度サンプルの割合 | `0.3` |
 | `--medium_ratio` | 中確信度サンプルの割合 | `0.4` |
 | `--low_ratio` | 低確信度サンプルの割合 | `0.3` |
@@ -119,7 +119,7 @@ python experiments/scripts/train_multi_layer_probe.py \
     --model_name gpt2 \
     --layers 0,6,11 \
     --aggregation weighted \
-    --data_dir data/processed \
+    --data_dir data/en/processed \
     --experiment_name gpt2_weighted
 
 # 日本語モデル（rinna/japanese-gpt2-medium）
@@ -127,7 +127,7 @@ python experiments/scripts/train_multi_layer_probe.py \
     --model_name rinna/japanese-gpt2-medium \
     --layers 0,12,23 \
     --aggregation weighted \
-    --data_dir data/japanese/processed \
+    --data_dir data/ja/processed \
     --experiment_name rinna_weighted
 
 # 大きなモデルや epoch 数が多い場合はキャッシュを使うと高速化できます
@@ -135,7 +135,7 @@ python experiments/scripts/train_multi_layer_probe.py \
     --model_name TinyLlama/TinyLlama-1.1B-Chat-v1.0 \
     --layers 0,11,21 \
     --aggregation weighted \
-    --data_dir data/processed \
+    --data_dir data/en/processed \
     --experiment_name tinyllama_weighted \
     --num_epochs 10 \
     --cache_hidden_states
@@ -237,11 +237,12 @@ brain-llm/
 │   ├── demo/            # Gradio デモ
 │   └── scripts/         # 実験スクリプト
 ├── data/
-│   ├── raw/             # 英語生データ
-│   ├── processed/       # 英語 train/val/test
-│   └── japanese/        # 日本語データ
-│       ├── raw/
-│       └── processed/
+│   ├── en/              # 英語データ
+│   │   ├── raw/         # 英語生データ
+│   │   └── processed/   # 英語 train/val/test
+│   └── ja/              # 日本語データ
+│       ├── raw/         # 日本語生データ
+│       └── processed/   # 日本語 train/val/test
 ├── results/
 │   └── experiments/     # 学習済みプローブ・評価結果・可視化HTML
 │       └── <experiment_name>_<timestamp>/   # 例: gpt2_weighted_20250612_143022

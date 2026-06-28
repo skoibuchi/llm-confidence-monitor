@@ -154,18 +154,25 @@ def parse_args():
     parser.add_argument("--num_samples", type=int, default=2000,
                         help="Number of samples to generate (default: 2000)")
     parser.add_argument("--output_path", type=str,
-                        default="data/japanese/raw/japanese_dataset.jsonl",
+                        default="data/ja/raw/japanese_dataset.jsonl",
                         help="Output file path")
     parser.add_argument("--processed_dir", type=str,
-                        default="data/japanese/processed",
+                        default="data/ja/processed",
                         help="Directory to save split data")
-    parser.add_argument("--high_ratio", type=float, default=0.35)
-    parser.add_argument("--medium_ratio", type=float, default=0.35)
-    parser.add_argument("--low_ratio", type=float, default=0.30)
-    parser.add_argument("--train_ratio", type=float, default=0.70)
-    parser.add_argument("--val_ratio", type=float, default=0.15)
-    parser.add_argument("--test_ratio", type=float, default=0.15)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--high_ratio", type=float, default=0.35,
+                        help="Ratio of high-confidence samples")
+    parser.add_argument("--medium_ratio", type=float, default=0.35,
+                        help="Ratio of medium-confidence samples")
+    parser.add_argument("--low_ratio", type=float, default=0.30,
+                        help="Ratio of low-confidence samples")
+    parser.add_argument("--train_ratio", type=float, default=0.70,
+                        help="Train split ratio")
+    parser.add_argument("--val_ratio", type=float, default=0.15,
+                        help="Validation split ratio")
+    parser.add_argument("--test_ratio", type=float, default=0.15,
+                        help="Test split ratio")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed")
     return parser.parse_args()
 
 
