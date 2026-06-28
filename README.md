@@ -296,6 +296,21 @@ print(f"Knows      : {result['knows']}")              # True / False
 
 Hugging Face downloads and caches models automatically on the first `from_pretrained()` call.
 
+**Gated models (e.g. Gemma, LLaMA)**
+
+Some models require accepting a licence agreement on the Hugging Face model page before downloading. After accepting, authenticate with one of the following methods — no code changes are needed.
+
+```bash
+# Option 1: interactive login (token saved to ~/.huggingface/token)
+pip install huggingface_hub
+huggingface-cli login
+
+# Option 2: environment variable (add to ~/.zshrc or ~/.bash_profile)
+export HF_TOKEN=hf_xxxxxxxxxxxx
+```
+
+`from_pretrained()` automatically checks `~/.huggingface/token` and the `HF_TOKEN` / `HUGGING_FACE_HUB_TOKEN` environment variable.
+
 **Default cache location**
 
 ```

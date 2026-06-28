@@ -99,13 +99,7 @@ def main():
     print("Knowledge Probe Training")
     print("=" * 60)
     print(f"\nOutput directory: {output_dir}")
-    
-    # Save config
-    config = vars(args)
-    with open(output_dir / "config.json", "w") as f:
-        json.dump(config, f, indent=2)
-    print(f"Config saved to {output_dir / 'config.json'}")
-    
+
     # Create sample dataset if requested
     if args.create_sample:
         print(f"\nCreating sample dataset with {args.num_samples} samples...")
@@ -114,14 +108,22 @@ def main():
         # Split dataset
         print("Splitting dataset...")
         split_dataset(args.data_path, output_dir=Path(args.data_path).parent.parent / "processed")
-    
+
     # Load model
     print(f"\nLoading model: {args.model_name}")
     loader = ModelLoader(args.model_name)
     model, tokenizer = loader.load()
-    
+
     model_info = loader.get_model_info()
     print(f"Model info: {model_info}")
+
+    # Save config (include model architecture info for later use e.g. Gradio demo)
+    config = vars(args).copy()
+    config['hidden_dim'] = model_info['hidden_size']
+    config['num_layers'] = model_info['num_layers']
+    with open(output_dir / "config.json", "w") as f:
+        json.dump(config, f, indent=2)
+    print(f"Config saved to {output_dir / 'config.json'}")
     
     # Create hidden state extractor
     extractor = HiddenStateExtractor(model, tokenizer)

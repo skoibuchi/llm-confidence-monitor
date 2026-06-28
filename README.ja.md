@@ -298,6 +298,21 @@ print(f"知識有: {result['knows']}")               # True / False
 
 `from_pretrained()` を初めて呼んだタイミングで、Hugging Face ライブラリが自動的にモデルをダウンロード・保存します。
 
+**ゲートモデルの認証（Gemma、LLaMA など）**
+
+一部のモデルは HuggingFace のモデルページでライセンスへの同意が必要です。同意後、以下のいずれかの方法で認証してください。コードの変更は不要です。
+
+```bash
+# 方法 1: 対話式ログイン（トークンが ~/.huggingface/token に保存される）
+pip install huggingface_hub
+huggingface-cli login
+
+# 方法 2: 環境変数（~/.zshrc や ~/.bash_profile に追記）
+export HF_TOKEN=hf_xxxxxxxxxxxx
+```
+
+`from_pretrained()` は `~/.huggingface/token` と環境変数 `HF_TOKEN` / `HUGGING_FACE_HUB_TOKEN` を自動的に参照します。
+
 **デフォルトの保存先**
 
 ```

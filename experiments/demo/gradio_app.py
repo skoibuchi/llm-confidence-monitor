@@ -31,20 +31,23 @@ class ConfidenceDemo:
         model_name: str = "gpt2",
         checkpoint_path: str = None,
         layers: List[int] = [0, 6, 11],
-        hidden_dim: int = 768
+        hidden_dim: int = 768,
+        aggregation: str = "weighted",
     ):
         """
         Args:
-            model_name: Model name
-            checkpoint_path: Path to the probe checkpoint
-            layers: Layer indices to use
-            hidden_dim: Hidden state dimensionality
+            model_name:       Hugging Face model name
+            checkpoint_path:  Path to the trained probe checkpoint
+            layers:           Layer indices to probe
+            hidden_dim:       Hidden state dimensionality
+            aggregation:      Multi-layer aggregation method
         """
-        self.model_name = model_name
+        self.model_name      = model_name
         self.checkpoint_path = checkpoint_path
-        self.layers = layers
-        self.hidden_dim = hidden_dim
-        
+        self.layers          = layers
+        self.hidden_dim      = hidden_dim
+        self.aggregation     = aggregation
+
         # Select compute device
         if torch.backends.mps.is_available():
             self.device = "mps"
@@ -52,14 +55,14 @@ class ConfidenceDemo:
             self.device = "cuda"
         else:
             self.device = "cpu"
-        
+
         logger.info(f"Using device: {self.device}")
-        
+
         # Load model and probe
         self._load_models()
-    
+
     def _load_models(self):
-        """Load model and probe."""
+        """Load the LLM, probe, and streaming generator."""
         logger.info("Loading models...")
 
         # Load LLM for text generation
@@ -68,39 +71,30 @@ class ConfidenceDemo:
             self.model_name,
             torch_dtype=torch.float32
         ).to(self.device)
-        
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        
-        # Load probe
+
+        # Instantiate probe with the resolved architecture
+        self.probe = MultiLayerProbe(
+            input_dim=self.hidden_dim,
+            num_layers=len(self.layers),
+            aggregation=self.aggregation,
+        ).to(self.device)
+
         if self.checkpoint_path:
+            # Restore trained weights
             checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
-
-            # Instantiate probe
-            self.probe = MultiLayerProbe(
-                input_dim=self.hidden_dim,
-                num_layers=len(self.layers),
-                aggregation="weighted"
-            ).to(self.device)
-
-            # Restore weights
             if 'probe_state_dict' in checkpoint:
                 self.probe.load_state_dict(checkpoint['probe_state_dict'])
             else:
                 self.probe.load_state_dict(checkpoint)
-
             self.probe.eval()
             logger.info("Probe loaded successfully")
         else:
-            # Untrained dummy probe (for demo without checkpoint)
-            self.probe = MultiLayerProbe(
-                input_dim=self.hidden_dim,
-                num_layers=len(self.layers),
-                aggregation="weighted"
-            ).to(self.device)
             logger.warning("Using dummy probe (not trained)")
-        
+
         # Wrap model and probe in the streaming generator
         self.generator = RealtimeGenerator(
             model=self.model,
@@ -109,7 +103,7 @@ class ConfidenceDemo:
             layers=self.layers,
             device=self.device
         )
-        
+
         logger.info("Models loaded successfully")
     
     def generate_with_confidence(
@@ -365,16 +359,23 @@ class ConfidenceDemo:
         return fig
 
 
-def get_model_config(model_name: str) -> Dict:
+def get_model_config(model_name: str, checkpoint_path: str = None) -> Dict:
     """
-    Return configuration for the given model name.
+    Return probe configuration for the given model.
+
+    If checkpoint_path is provided and a config.json exists alongside it,
+    that file takes priority over the built-in presets. Missing keys in
+    config.json fall back to the preset values.
 
     Args:
-        model_name: Model name
+        model_name:      Hugging Face model name
+        checkpoint_path: Optional path to the checkpoint file (best_model.pt)
 
     Returns:
-        Dict: Model config (layers, hidden_dim, examples)
+        Dict with keys: layers, hidden_dim, aggregation, (and examples from preset)
     """
+    import json as _json
+
     configs = {
         "gpt2": {
             "layers": [0, 6, 11],
@@ -422,7 +423,7 @@ def get_model_config(model_name: str) -> Dict:
         }
     }
     
-    # Fallback config for unrecognised model names
+    # Fallback config for unrecognized model names
     default_config = {
         "layers": [0, 6, 11],
         "hidden_dim": 768,
@@ -432,22 +433,54 @@ def get_model_config(model_name: str) -> Dict:
             ["Mount Everest is located in", 30, 0.7],
         ]
     }
-    
-    return configs.get(model_name, default_config)
+
+    preset = configs.get(model_name, default_config)
+
+    # Override with config.json if available alongside the checkpoint
+    if checkpoint_path is not None:
+        config_path = Path(checkpoint_path).parent / "config.json"
+        if config_path.exists():
+            with open(config_path) as f:
+                saved = _json.load(f)
+            preset = preset.copy()
+            preset["layers"]      = saved.get("layer_indices", preset["layers"])
+            preset["hidden_dim"]  = saved.get("hidden_dim",    preset["hidden_dim"])
+            preset["aggregation"] = saved.get("aggregation",   "weighted")
+            logger.info(
+                f"Probe config loaded from config.json: "
+                f"hidden_dim={preset['hidden_dim']}, layers={preset['layers']}, "
+                f"aggregation={preset['aggregation']}"
+            )
+        else:
+            logger.warning("config.json not found alongside checkpoint — using model preset")
+
+    return preset
 
 
-def create_demo_interface(model_name: str = "gpt2", checkpoint_path: str = None):
+def create_demo_interface(
+    model_name: str = "gpt2",
+    checkpoint_path: str = None,
+    layers: List[int] = None,
+    hidden_dim: int = None,
+):
     """Create the Gradio interface."""
 
-    # Get model-specific config
-    model_config = get_model_config(model_name)
+    # Resolve probe config: config.json alongside checkpoint → model preset
+    model_config = get_model_config(model_name, checkpoint_path)
+
+    # CLI arguments take highest priority
+    if layers is not None:
+        model_config['layers'] = layers
+    if hidden_dim is not None:
+        model_config['hidden_dim'] = hidden_dim
 
     # Initialize demo app
     demo_app = ConfidenceDemo(
         model_name=model_name,
         checkpoint_path=checkpoint_path,
         layers=model_config['layers'],
-        hidden_dim=model_config['hidden_dim']
+        hidden_dim=model_config['hidden_dim'],
+        aggregation=model_config.get('aggregation', 'weighted'),
     )
     
     # Gradio interface
@@ -578,7 +611,7 @@ def create_demo_interface(model_name: str = "gpt2", checkpoint_path: str = None)
 def main():
     """Main function."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Launch Gradio demo")
     parser.add_argument(
         "--model",
@@ -593,6 +626,22 @@ def main():
         help="Path to trained probe checkpoint"
     )
     parser.add_argument(
+        "--layers",
+        type=str,
+        default=None,
+        help="Comma-separated layer indices (e.g. '0,14,41'). "
+             "Overrides config.json and model preset. "
+             "Required for models not listed in the built-in presets."
+    )
+    parser.add_argument(
+        "--hidden_dim",
+        type=int,
+        default=None,
+        help="Hidden state dimensionality (e.g. 3584 for Gemma-2-9B). "
+             "Overrides config.json and model preset. "
+             "Required for models not listed in the built-in presets."
+    )
+    parser.add_argument(
         "--share",
         action="store_true",
         help="Create public link"
@@ -603,9 +652,9 @@ def main():
         default=7860,
         help="Port number"
     )
-    
+
     args = parser.parse_args()
-    
+
     logger.info(f"Starting demo with model: {args.model}")
     if args.checkpoint:
         logger.info(f"Using checkpoint: {args.checkpoint}")
@@ -613,7 +662,9 @@ def main():
     # Build and launch the Gradio interface
     demo, theme = create_demo_interface(
         model_name=args.model,
-        checkpoint_path=args.checkpoint
+        checkpoint_path=args.checkpoint,
+        layers=[int(x) for x in args.layers.split(",")] if args.layers else None,
+        hidden_dim=args.hidden_dim,
     )
 
     demo.launch(

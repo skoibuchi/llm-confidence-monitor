@@ -111,19 +111,21 @@ def main():
     print(f"Layers: {layer_indices}")
     print(f"Aggregation: {args.aggregation}")
     
-    # Save config
-    config = vars(args)
-    config['layer_indices'] = layer_indices
-    with open(output_dir / "config.json", "w") as f:
-        json.dump(config, f, indent=2)
-    
     # Load model
     print(f"\nLoading model: {args.model_name}")
     loader = ModelLoader(args.model_name)
     model, tokenizer = loader.load()
-    
+
     model_info = loader.get_model_info()
     print(f"Model info: {model_info}")
+
+    # Save config (include model architecture info for later use e.g. Gradio demo)
+    config = vars(args).copy()
+    config['layer_indices'] = layer_indices
+    config['hidden_dim'] = model_info['hidden_size']
+    config['num_layers'] = model_info['num_layers']
+    with open(output_dir / "config.json", "w") as f:
+        json.dump(config, f, indent=2)
     
     # Create hidden state extractor
     extractor = HiddenStateExtractor(model, tokenizer)
