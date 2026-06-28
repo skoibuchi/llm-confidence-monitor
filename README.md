@@ -45,8 +45,8 @@ Confidence is computed token by token during generation and displayed with colou
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/brain-llm.git
-cd brain-llm
+git clone https://github.com/skoibuchi/llm-confidence-monitor
+cd llm-confidence-monitor
 ```
 
 ### 2. Create a virtual environment
@@ -222,7 +222,7 @@ Generated HTML files (open in browser):
 ## Project Structure
 
 ```
-brain-llm/
+llm-confidence-monitor/
 ├── src/
 │   ├── models/          # Model management
 │   ├── probes/          # Probe implementations
